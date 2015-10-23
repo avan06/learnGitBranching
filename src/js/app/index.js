@@ -260,16 +260,25 @@ function tryLocaleDetect() {
   // lets fire off a request to get our headers which then
   // can help us identify what locale the browser is in.
   // wrap everything in a try since this is a third party service
+  var isDone = false;
   try {
     $.ajax({
       url: 'http://ajaxhttpheaders.appspot.com',
-      dataType: 'jsonp',
-      success: function(headers) {
-        changeLocaleFromHeaders(headers['Accept-Language']);
-      }
+      dataType: 'jsonp'
+    }).done(function(headers) {
+      isDone = true;
+      changeLocaleFromHeaders(headers['Accept-Language']);
     });
   } catch (e) {
     console.warn('locale detect fail', e);
+  } finally {
+    if (!isDone) {
+      if (window.navigator.language !== undefined && window.navigator.language.length) {
+        changeLocaleFromHeaders(window.navigator.language);
+      } else if (window.navigator.browserLanguage !== undefined && window.navigator.browserLanguage.length) {
+        changeLocaleFromHeaders(window.navigator.browserLanguage);
+      }
+    }
   }
 }
 
